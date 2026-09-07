@@ -1,25 +1,5 @@
 [
   {
-    "id": "t1788767481752",
-    "date": "2026-09-07",
-    "instrument": "XAUUSD",
-    "direction": "long",
-    "volume": 0.05,
-    "open": 4406.06,
-    "close": 4460.12,
-    "contract": 100,
-    "leverage": 2000,
-    "posVal": 22030.300000000003,
-    "margin": 11.015150000000002,
-    "pnl": 270.29999999999745,
-    "rom": 2453.893047303009,
-    "tags": [
-      "turtle soup + cisd"
-    ],
-    "notes": "This is just a syncing test as the confirmation isn't yet there",
-    "images": []
-  },
-  {
     "id": "t1788767565529",
     "date": "2026-09-07",
     "instrument": "XAUUSD",
