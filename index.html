@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0D0F">
+<title>Ledger — Trade Journal</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <div class="app-header">
+    <div>
+      <div class="brand">Ledger — Pictorial Journal</div>
+      <div class="brand-sub">AGNUM · trade breakdowns, by picture</div>
+    </div>
+    <div id="modePill" class="mode-pill">view-only</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-view="calendar">Calendar</button>
+    <button class="tab" data-view="trades">Trades</button>
+    <button class="tab" id="addTab" data-view="add" disabled>Add Trade</button>
+    <button class="tab" data-view="settings">Settings</button>
+  </div>
+
+  <div id="statusArea"></div>
+
+  <!-- CALENDAR VIEW -->
+  <section class="view active" id="view-calendar">
+    <div class="cal-header">
+      <h2 id="calMonthLabel">—</h2>
+      <div class="cal-nav">
+        <button id="calPrev">‹</button>
+        <button id="calNext">›</button>
+      </div>
+    </div>
+    <div class="cal-summary" id="calSummary"></div>
+    <div class="cal-grid" id="calGrid"></div>
+
+    <div class="day-trades">
+      <h3 id="dayTradesLabel">Select a day</h3>
+      <div id="dayTradesList"></div>
+    </div>
+  </section>
+
+  <!-- TRADES LIST VIEW -->
+  <section class="view" id="view-trades">
+    <div id="allTradesList"></div>
+  </section>
+
+  <!-- ADD TRADE VIEW -->
+  <section class="view" id="view-add">
+    <div class="panel">
+      <div class="field-row">
+        <div class="field">
+          <label>Date</label>
+          <input type="date" id="f-date">
+        </div>
+        <div class="field">
+          <label>Instrument</label>
+          <input type="text" id="f-instrument" list="instrumentList" placeholder="XAUUSD">
+          <datalist id="instrumentList"></datalist>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Direction</label>
+          <select id="f-direction">
+            <option value="long">Long</option>
+            <option value="short">Short</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Volume (lots)</label>
+          <input type="number" step="any" id="f-volume" placeholder="1">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Open price</label>
+          <input type="number" step="any" id="f-open">
+        </div>
+        <div class="field">
+          <label>Close price</label>
+          <input type="number" step="any" id="f-close">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Contract size</label>
+          <input type="number" step="any" id="f-contract" placeholder="100">
+        </div>
+        <div class="field">
+          <label>Leverage</label>
+          <input type="number" step="any" id="f-leverage" placeholder="100">
+        </div>
+      </div>
+
+      <div class="computed" id="computedBox">
+        <div class="metric"><div class="label">Position value</div><div class="value" id="c-posval">—</div></div>
+        <div class="metric"><div class="label">Margin</div><div class="value" id="c-margin">—</div></div>
+        <div class="metric"><div class="label">PnL</div><div class="value" id="c-pnl">—</div></div>
+        <div class="metric"><div class="label">RoM</div><div class="value" id="c-rom">—</div></div>
+      </div>
+
+      <div class="field">
+        <label>Tags (comma separated)</label>
+        <input type="text" id="f-tags" placeholder="sweep, ob, ny-session">
+      </div>
+
+      <div class="field">
+        <label>Trade logic / notes</label>
+        <textarea id="f-notes" placeholder="Breakdown of the setup, what confirmed entry, what invalidated it..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Images (up to 6)</label>
+        <div class="upload-zone" id="uploadZone">Tap to add screenshots, or drag them here</div>
+        <input type="file" id="f-images" accept="image/*" multiple style="display:none">
+        <div class="upload-previews" id="uploadPreviews"></div>
+      </div>
+
+      <button class="btn-primary" id="submitTrade">Save trade to journal</button>
+    </div>
+  </section>
+
+  <!-- SETTINGS VIEW -->
+  <section class="view" id="view-settings">
+    <div class="panel">
+      <div class="field">
+        <label>GitHub username</label>
+        <input type="text" id="cfg-owner" placeholder="Cliff-developer">
+      </div>
+      <div class="field">
+        <label>Repository name</label>
+        <input type="text" id="cfg-repo" placeholder="trade-journal">
+      </div>
+      <div class="hint">Both devices need this filled in — it tells the app where to read trades from. Leave the token blank on your phone; only fill it in on the device you want to edit from.</div>
+    </div>
+
+    <div class="panel">
+      <div class="field">
+        <label>GitHub personal access token (write access — laptop only)</label>
+        <input type="password" id="cfg-token" placeholder="ghp_...">
+      </div>
+      <div class="hint">
+        Needs a classic token with the <code>repo</code> scope (or a fine-grained token with read/write on Contents for this repo).
+        The token is saved only in this browser's local storage — never uploaded anywhere except directly to GitHub's API.
+        Leave this blank to keep a device in view-only mode.
+      </div>
+    </div>
+
+    <button class="btn-primary" id="saveSettings">Save settings</button>
+  </section>
+
+</div>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">×</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
