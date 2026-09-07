@@ -555,6 +555,18 @@ function init(){
     e.preventDefault(); handleFiles(e.dataTransfer.files);
   });
 
+  // Paste screenshots straight from the clipboard (e.g. copied out of TradingView)
+  // while the Add Trade view is open.
+  document.addEventListener('paste', (e) => {
+    const addView = document.getElementById('view-add');
+    if (!addView.classList.contains('active')) return;
+    const items = Array.from(e.clipboardData.items).filter(it => it.kind === 'file' && it.type.startsWith('image/'));
+    if (!items.length) return;
+    e.preventDefault();
+    const files = items.map(it => it.getAsFile()).filter(Boolean);
+    handleFiles(files);
+  });
+
   document.getElementById('submitTrade').onclick = submitTrade;
   document.getElementById('saveSettings').onclick = saveSettings;
   document.getElementById('lightboxClose').onclick = closeLightbox;
