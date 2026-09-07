@@ -18,5 +18,28 @@
     ],
     "notes": "This is just a syncing test as the confirmation isn't yet there",
     "images": []
+  },
+  {
+    "id": "t1788767565529",
+    "date": "2026-09-07",
+    "instrument": "XAUUSD",
+    "direction": "long",
+    "volume": 0.05,
+    "open": 4406.06,
+    "close": 4467.85,
+    "contract": 100,
+    "leverage": 2000,
+    "posVal": 22030.300000000003,
+    "margin": 11.015150000000002,
+    "pnl": 308.9499999999998,
+    "rom": 2804.773425690978,
+    "tags": [
+      "Turtle sup"
+    ],
+    "notes": "test really",
+    "images": [
+      "images/t1788767565529-1.jpg",
+      "images/t1788767565529-2.jpg"
+    ]
   }
 ]
