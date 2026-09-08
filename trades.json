@@ -21,5 +21,30 @@
       "images/t1788767565529-1.jpg",
       "images/t1788767565529-2.jpg"
     ]
+  },
+  {
+    "id": "t1788842864388",
+    "date": "2026-09-07",
+    "instrument": "XAGUSD",
+    "direction": "long",
+    "volume": 0.03,
+    "open": 67,
+    "close": 66.74,
+    "contract": 5000,
+    "leverage": 2000,
+    "posVal": 10050,
+    "margin": 5.025,
+    "pnl": -39.00000000000076,
+    "rom": -776.1194029850898,
+    "tags": [
+      "OB on the 3min",
+      "after a 15 min turtle soup."
+    ],
+    "notes": "Price ranged within my entry for a while and even gave me an out twice but I stuck to my gut. I was going off of a 3 min OB, which I think is too low a TF to trade on during the Asian session. The 5 min tf offered a better view.",
+    "images": [
+      "images/t1788842864388-1.jpg",
+      "images/t1788842864388-2.jpg",
+      "images/t1788842864388-3.jpg"
+    ]
   }
 ]
