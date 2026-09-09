@@ -46,5 +46,31 @@
       "images/t1788842864388-2.jpg",
       "images/t1788842864388-3.jpg"
     ]
+  },
+  {
+    "id": "t1788929134740",
+    "date": "2026-09-08",
+    "instrument": "XAGUSD",
+    "direction": "long",
+    "volume": 0.03,
+    "open": 65.7109,
+    "close": 66.6548,
+    "contract": 5000,
+    "leverage": 2000,
+    "posVal": 9856.634999999998,
+    "margin": 4.9283174999999995,
+    "pnl": 141.5849999999999,
+    "rom": 2872.887146576898,
+    "tags": [
+      "Turtle soup 15 min",
+      "OB formed on 5 min tf",
+      "Entry in 3 min tf",
+      "Asia"
+    ],
+    "notes": "15 min cisd paired with a 3 min tf fvg retest entry",
+    "images": [
+      "images/t1788929134740-1.jpg",
+      "images/t1788929134740-2.jpg"
+    ]
   }
 ]
