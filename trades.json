@@ -72,5 +72,25 @@
       "images/t1788929134740-1.jpg",
       "images/t1788929134740-2.jpg"
     ]
+  },
+  {
+    "id": "t1789044446063",
+    "date": "2026-09-10",
+    "instrument": "XAGUSD",
+    "direction": "short",
+    "volume": 0.08,
+    "open": 65.76,
+    "close": 63.32,
+    "contract": 5000,
+    "leverage": 1998,
+    "posVal": 26304.000000000004,
+    "margin": 13.165165165165167,
+    "pnl": 976.0000000000019,
+    "rom": 7413.503649635051,
+    "tags": [],
+    "notes": "",
+    "images": [
+      "images/t1789044446063-1.jpg"
+    ]
   }
 ]
