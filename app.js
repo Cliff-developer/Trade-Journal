@@ -7,17 +7,36 @@ function saveConfig(cfg){ localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
 let config = loadConfig();
 let isEditMode = !!(config.owner && config.repo && config.token);
 
-/* ---------- Instrument defaults (contract size / leverage hints) ---------- */
-const INSTRUMENT_DEFAULTS = {
-  'XAUUSD': { contract: 100, leverage: 100 },
-  'XAGUSD': { contract: 5000, leverage: 50 },
-  'EURUSD': { contract: 100000, leverage: 100 },
-  'GBPUSD': { contract: 100000, leverage: 100 },
-  'USDJPY': { contract: 100000, leverage: 100 },
-  'US30':   { contract: 1, leverage: 100 },
-  'NAS100': { contract: 1, leverage: 100 },
-  'BTCUSD': { contract: 1, leverage: 20 },
-};
+/* ---------- Instrument library (contract size / default leverage) ----------
+   Persisted locally per device, editable from Settings. New instruments
+   default to 2000x leverage; everything is editable after that, both in
+   the library and per trade on the Add Trade form. ------------------------- */
+const LIB_KEY = 'ptj_instrument_library_v1';
+const DEFAULT_LEVERAGE = 2000;
+const SEED_LIBRARY = [
+  { symbol:'XAUUSD', contract:100 },
+  { symbol:'XAGUSD', contract:5000 },
+  { symbol:'EURUSD', contract:100000 },
+  { symbol:'GBPUSD', contract:100000 },
+  { symbol:'USDJPY', contract:100000 },
+  { symbol:'US30',   contract:1 },
+  { symbol:'NAS100', contract:1 },
+  { symbol:'BTCUSD', contract:1 },
+].map(i => ({ ...i, leverage: DEFAULT_LEVERAGE }));
+
+function loadLibrary(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(LIB_KEY));
+    if(raw && raw.length) return raw;
+  }catch(e){}
+  saveLibrary(SEED_LIBRARY);
+  return SEED_LIBRARY.slice();
+}
+function saveLibrary(lib){ localStorage.setItem(LIB_KEY, JSON.stringify(lib)); }
+let instrumentLibrary = loadLibrary();
+function findInstrument(symbol){
+  return instrumentLibrary.find(i => i.symbol === symbol);
+}
 
 /* ---------- State ---------- */
 let trades = [];
@@ -224,13 +243,13 @@ function renderCalendar(){
       monthPnl += netPnl;
       monthTrades += dayTrades.length;
       monthWins += dayTrades.filter(t=>t.pnl>0).length;
-      const firstImg = dayTrades.find(t => t.images && t.images.length);
-      if(firstImg){
-        const thumb = document.createElement('div');
-        thumb.className = 'thumb';
-        thumb.style.backgroundImage = `url("${rawUrl(firstImg.images[0])}")`;
-        cell.appendChild(thumb);
-      }
+      const romVals = dayTrades.map(t=>t.rom).filter(v => v!==null && v!==undefined && !isNaN(v));
+      const dayRom = romVals.length ? romVals.reduce((a,b)=>a+b,0)/romVals.length : null;
+      const figs = document.createElement('div');
+      figs.className = 'cal-figs';
+      figs.innerHTML = `<div class="amt">${money(netPnl)}</div><div class="pct">${pctStr(dayRom)}</div>`;
+      cell.appendChild(figs);
+
       const dot = document.createElement('div');
       dot.className = 'dot';
       cell.appendChild(dot);
@@ -336,12 +355,68 @@ function renderAll(){
   renderCalendar();
   renderDayTrades();
   renderAllTradesList();
-  populateInstrumentList();
+  if(!editingId){
+    renderInstrumentSelect();
+    applyInstrumentDefaults();
+  }
 }
 
-function populateInstrumentList(){
-  const dl = document.getElementById('instrumentList');
-  dl.innerHTML = Object.keys(INSTRUMENT_DEFAULTS).map(i=>`<option value="${i}">`).join('');
+function renderInstrumentSelect(selected){
+  const sel = document.getElementById('f-instrument');
+  const current = selected !== undefined ? selected : sel.value;
+  sel.innerHTML = instrumentLibrary.map(i => `<option value="${i.symbol}">${i.symbol}</option>`).join('');
+  // If editing a trade whose instrument isn't in the library (e.g. a one-off), keep it selectable.
+  if(current && !findInstrument(current)){
+    sel.insertAdjacentHTML('beforeend', `<option value="${current}">${current}</option>`);
+  }
+  if(current) sel.value = current;
+}
+
+function renderLibraryManager(){
+  const box = document.getElementById('libraryList');
+  box.innerHTML = instrumentLibrary.map((inst, i) => `
+    <div class="lib-row">
+      <span class="lib-symbol">${inst.symbol}</span>
+      <input type="number" step="any" data-i="${i}" data-field="contract" value="${inst.contract}" title="Contract size">
+      <input type="number" step="any" data-i="${i}" data-field="leverage" value="${inst.leverage}" title="Leverage">
+      <button class="remove" data-i="${i}" title="Remove">×</button>
+    </div>
+  `).join('');
+  box.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('change', () => {
+      const i = +inp.dataset.i, field = inp.dataset.field;
+      instrumentLibrary[i][field] = parseFloat(inp.value) || 0;
+      saveLibrary(instrumentLibrary);
+    });
+  });
+  box.querySelectorAll('.remove').forEach(btn => {
+    btn.onclick = () => {
+      instrumentLibrary.splice(+btn.dataset.i, 1);
+      saveLibrary(instrumentLibrary);
+      renderLibraryManager();
+      renderInstrumentSelect();
+    };
+  });
+}
+
+function addLibraryInstrument(){
+  const symbol = document.getElementById('lib-symbol').value.trim().toUpperCase();
+  const contract = parseFloat(document.getElementById('lib-contract').value);
+  if(!symbol || !contract){
+    showStatus('Enter both a symbol and a contract size to add it to the library.', 'error');
+    return;
+  }
+  if(findInstrument(symbol)){
+    showStatus(`${symbol} is already in the library.`, 'error');
+    return;
+  }
+  instrumentLibrary.push({ symbol, contract, leverage: DEFAULT_LEVERAGE });
+  saveLibrary(instrumentLibrary);
+  document.getElementById('lib-symbol').value = '';
+  document.getElementById('lib-contract').value = '';
+  renderLibraryManager();
+  renderInstrumentSelect();
+  showStatus(`${symbol} added to the library.`, 'success');
 }
 
 /* ---------- Lightbox ---------- */
@@ -382,22 +457,24 @@ function updateComputed(){
 }
 
 function applyInstrumentDefaults(){
-  const name = document.getElementById('f-instrument').value.trim().toUpperCase();
-  const d = INSTRUMENT_DEFAULTS[name];
+  const name = document.getElementById('f-instrument').value;
+  const d = findInstrument(name);
   if(d){
-    if(!document.getElementById('f-contract').value) document.getElementById('f-contract').value = d.contract;
-    if(!document.getElementById('f-leverage').value) document.getElementById('f-leverage').value = d.leverage;
+    document.getElementById('f-contract').value = d.contract;
+    document.getElementById('f-leverage').value = d.leverage;
     updateComputed();
   }
 }
 
 /* ---------- Save / Edit / Delete ---------- */
 function resetForm(){
-  ['f-instrument','f-volume','f-open','f-close','f-contract','f-leverage','f-tags','f-notes'].forEach(id=>{
+  ['f-volume','f-open','f-close','f-tags','f-notes'].forEach(id=>{
     document.getElementById(id).value = '';
   });
   document.getElementById('f-date').value = todayStr();
   document.getElementById('f-direction').value = 'long';
+  renderInstrumentSelect(instrumentLibrary[0] ? instrumentLibrary[0].symbol : '');
+  applyInstrumentDefaults();
   pendingImages = [];
   renderUploadPreviews();
   editingId = null;
@@ -410,7 +487,7 @@ function startEdit(id){
   if(!t) return;
   editingId = id;
   document.getElementById('f-date').value = t.date;
-  document.getElementById('f-instrument').value = t.instrument;
+  renderInstrumentSelect(t.instrument);
   document.getElementById('f-direction').value = t.direction;
   document.getElementById('f-volume').value = t.volume;
   document.getElementById('f-open').value = t.open;
@@ -569,6 +646,8 @@ function init(){
 
   document.getElementById('submitTrade').onclick = submitTrade;
   document.getElementById('saveSettings').onclick = saveSettings;
+  document.getElementById('addInstrument').onclick = addLibraryInstrument;
+  renderLibraryManager();
   document.getElementById('lightboxClose').onclick = closeLightbox;
   document.getElementById('lightbox').onclick = (e)=>{ if(e.target.id==='lightbox') closeLightbox(); };
 

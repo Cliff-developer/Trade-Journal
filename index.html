@@ -63,8 +63,7 @@
         </div>
         <div class="field">
           <label>Instrument</label>
-          <input type="text" id="f-instrument" list="instrumentList" placeholder="XAUUSD">
-          <datalist id="instrumentList"></datalist>
+          <select id="f-instrument"></select>
         </div>
       </div>
 
@@ -159,6 +158,23 @@
     </div>
 
     <button class="btn-primary" id="saveSettings">Save settings</button>
+
+    <div class="panel" style="margin-top:20px;">
+      <label style="display:block;font-size:0.76rem;color:var(--text-dim);margin-bottom:10px;font-family:var(--font-mono);">Instrument library</label>
+      <div id="libraryList"></div>
+      <div class="field-row" style="margin-top:12px;">
+        <div class="field">
+          <label>Symbol</label>
+          <input type="text" id="lib-symbol" placeholder="EURJPY">
+        </div>
+        <div class="field">
+          <label>Contract size</label>
+          <input type="number" step="any" id="lib-contract" placeholder="100000">
+        </div>
+      </div>
+      <button class="btn-primary" id="addInstrument">Add to library</button>
+      <div class="hint">New instruments default to 2000× leverage — editable per instrument here, and per trade on the Add Trade form.</div>
+    </div>
   </section>
 
 </div>
